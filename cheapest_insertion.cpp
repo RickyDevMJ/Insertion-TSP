@@ -1,32 +1,19 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-/*
-// https://stackoverflow.com/a/12996028
-u_int hash_uint(u_int x) {
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = (x >> 16) ^ x;
-    return x;
-}
-
-u_int edge_hash(u_int i, u_int j) {
-	return hash_uint(i) + hash_uint(j);
-}
-*/
-
 u_int edge_hash(u_int i, u_int j, u_int m) {
 	return i * m + j;
 }
 
-float distance(vector<pair<float, float>> coordinates, u_int i, u_int j) {
-	float l1 = coordinates[i].first-coordinates[j].first;
-	float l2 = coordinates[i].second-coordinates[j].second;
+float distance(float x_i, float y_i, float x_j, float y_j) {
+	float l1 = x_i - x_j;
+	float l2 = y_i - y_j;
 	return sqrt(l1*l1 + l2*l2);
 }
+#define distance(coordinates, i, j) distance(coordinates[i].first, coordinates[i].second, coordinates[j].first, coordinates[j].second)
 
 int main() {
-	
+	auto start = chrono::high_resolution_clock::now();
 	u_int n;
 	vector<pair<float, float>> coordinates;
 	unordered_map<u_int, priority_queue<pair<float, u_int>>> insertion_cost;
@@ -36,8 +23,9 @@ int main() {
 	// Reading inputs
 	cin >> n;
 	for (u_int i = 0; i < n; i++) {
+		u_int id;
 		float x, y;
-		cin >> x >> y;
+		cin >> id >> x >> y;
 		coordinates.push_back(make_pair(x, y));
 	}
 
@@ -61,7 +49,6 @@ int main() {
 	
 
 	// Choosing remaining vertices
-
 	for (u_int i = 0; i < n; i++) {
 		if (current_vertices.find(i) != current_vertices.end())
 			continue;
@@ -73,7 +60,7 @@ int main() {
 		float c = distance(coordinates, v1, v2), d1 = distance(coordinates, i, v1), d2 = distance(coordinates, i, v2);
 		insertion_cost[i].push(make_pair(-(d1+d2-c), edge_index));
 	}
-
+	
 	for (u_int num = 2; num < n; num++) {
 		min_distance = MAXFLOAT;
 		vertex_index = 0;
@@ -107,19 +94,18 @@ int main() {
 			if (current_vertices.find(i) != current_vertices.end())
 				continue;
 
-			float c = distance(coordinates, vertex_index, v1), d1 = distance(coordinates, i, vertex_index), d2 = distance(coordinates, i, v1);
-			insertion_cost[i].push(make_pair(-(d1+d2-c), edge_index_1));
-
-			c = distance(coordinates, vertex_index, v2), d1 = distance(coordinates, i, vertex_index), d2 = distance(coordinates, i, v2);
-			insertion_cost[i].push(make_pair(-(d1+d2-c), edge_index_2));
+			float c1 = distance(coordinates, vertex_index, v1), c2 = distance(coordinates, vertex_index, v2);
+			float d = distance(coordinates, i, vertex_index), d1 = distance(coordinates, i, v1), d2 = distance(coordinates, i, v2);
+			
+			insertion_cost[i].push(make_pair(-(d+d1-c1), edge_index_1));
+			insertion_cost[i].push(make_pair(-(d+d2-c2), edge_index_2));
 		}
-
 	}
 
 	// Output answer
 	float ans = 0.f;
 	assert(current_edges.size() == n);
-	cout << endl << "Edges in tour: " << endl; 
+	//cout << endl << "Edges in tour: " << endl; 
 	unordered_set<u_int> first_occurence, second_occurence;
 	for (const auto& edge: current_edges) {
 		u_int e1 = edge_map[edge].first, e2 = edge_map[edge].second;
@@ -142,9 +128,10 @@ int main() {
 			return 1;
 		}
 
-		cout << e1 << " " << e2 << endl;
+		//cout << e1 << " " << e2 << endl;
 		ans += distance(coordinates, e1, e2);
 	}
+
 	// Another correctness check
 	for (u_int e1 : first_occurence) {
 		if (second_occurence.find(e1) == second_occurence.end()) {
@@ -152,7 +139,11 @@ int main() {
 			return 1;
 		}
 	}
-	cout << endl << "Cost: " << ans << endl;
 
+	//cout << endl;
+	cout << "Cost: " << ans << endl;
+	auto end = chrono::high_resolution_clock::now();
+	auto duration = chrono::duration_cast<chrono::microseconds>(end - start);
+	cout << "Program time : " << duration.count() << endl;
 	return 0;
 }
