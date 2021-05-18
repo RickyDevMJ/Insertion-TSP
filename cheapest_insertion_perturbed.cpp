@@ -1,20 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-/*
-// https://stackoverflow.com/a/12996028
-u_int hash_uint(u_int x) {
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = (x >> 16) ^ x;
-    return x;
-}
-
-u_int edge_hash(u_int i, u_int j) {
-	return hash_uint(i) + hash_uint(j);
-}
-*/
-
 u_int edge_hash(u_int i, u_int j, u_int m) {
 	return i * m + j;
 }
@@ -168,15 +154,22 @@ int main(int argc, char* argv[]) {
 		MAX = max(abs(y[i]), MAX);
 	}
 
-	string type = string(argv[1]);
-	double sigma = atof(argv[2]);
-	u_int numOuts = atoi(argv[3]);
+	string type = "normal";
+	double sigma = 0.01;
+	u_int numOuts = 25;
+
+	if(argc > 1)
+		type = string(argv[1]);
+	if(argc > 2)
+		sigma = atof(argv[2]);
+	if(argc > 3)
+		numOuts = atoi(argv[3]);
 
 	double sum = 0.0;
 	if(string(type) == "uniform") {
 		uniform_real_distribution<double> distribution(-sigma, sigma);
 
-		for(u_int i = 0; i < numOuts; i++) {
+		for(u_int j = 0; j < numOuts; j++) {
 			double out_x[n], out_y[n];
 
 			for(u_int i = 0; i < n; i++) {
@@ -190,7 +183,7 @@ int main(int argc, char* argv[]) {
 	else {
 		normal_distribution<double> distribution(0.0, sigma);
 
-		for(u_int i = 0; i < numOuts; i++) {
+		for(u_int j = 0; j < numOuts; j++) {
 			double out_x[n], out_y[n];
 
 			for(u_int i = 0; i < n; i++) {
