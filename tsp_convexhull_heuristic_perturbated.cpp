@@ -99,38 +99,38 @@ int main(int argc, char** argv)
   string type = string(argv[1]);
   double sigma = atof(argv[2]);
   u_int numOuts = atoi(argv[3]);
-  cout<< type<<sigma<<numOuts<<endl;
 
   double sum = 0.0;
-  double values[numOuts];
+    double values[numOuts];
   if(string(type) == "uniform") {
     uniform_real_distribution<double> distribution(-sigma, sigma);
 
     for(u_int j = 0; j < numOuts; j++) {
       double out_x[n], out_y[n];
+
       for(u_int i = 0; i < n; i++) {
         out_x[i] = x[i] / MAX + distribution(generator);
         out_y[i] = y[i] / MAX + distribution(generator);
       }
-
-      tsp_convexhull_heuristic tsp(n,out_x, out_y);
-      sum += tsp.tour_cost;
-      double cost = tsp.tour_cost * MAX;
+      tsp_convexhull_heuristic tsp(n, out_x, out_y);
+      double cost = tsp.tour_cost* MAX;
       sum += cost;
       values[j] = cost;
     }
   }
   else {
     normal_distribution<double> distribution(0.0, sigma);
+
     for(u_int j = 0; j < numOuts; j++) {
       double out_x[n], out_y[n];
+
       for(u_int i = 0; i < n; i++) {
         out_x[i] = x[i] / MAX + distribution(generator);
         out_y[i] = y[i] / MAX + distribution(generator);
-      } 
-      tsp_convexhull_heuristic tsp(n,out_x, out_y);
-      sum += tsp.tour_cost;
-      double cost = tsp.tour_cost * MAX;
+      }
+
+      tsp_convexhull_heuristic tsp(n, out_x, out_y);
+      double cost = tsp.tour_cost* MAX;
       sum += cost;
       values[j] = cost;
     }
@@ -138,7 +138,6 @@ int main(int argc, char** argv)
 
   double variance = 0.0;
   double average = sum / numOuts;
-  average *= MAX;
   for(u_int i = 0; i < numOuts; i++) {
     variance += (values[i] - average) * (values[i] - average);
   }
