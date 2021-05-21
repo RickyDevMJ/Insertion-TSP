@@ -166,6 +166,7 @@ int main(int argc, char* argv[]) {
 		numOuts = atoi(argv[3]);
 
 	double sum = 0.0;
+	double values[numOuts];
 	if(string(type) == "uniform") {
 		uniform_real_distribution<double> distribution(-sigma, sigma);
 
@@ -177,7 +178,9 @@ int main(int argc, char* argv[]) {
 				out_y[i] = y[i] / MAX + distribution(generator);
 			}
 
-			sum += tour_cost(n, out_x, out_y);
+			double cost = tour_cost(n, out_x, out_y) * MAX;
+			sum += cost;
+			values[j] = cost;
 		}
 	}
 	else {
@@ -191,11 +194,22 @@ int main(int argc, char* argv[]) {
 				out_y[i] = y[i] / MAX + distribution(generator);
 			}
 
-			sum += tour_cost(n, out_x, out_y);
+			double cost = tour_cost(n, out_x, out_y) * MAX;
+			sum += cost;
+			values[j] = cost;
 		}
 	}
 
+	double variance = 0.0;
 	double average = sum / numOuts;
-	average *= MAX;
+	for(u_int i = 0; i < numOuts; i++) {
+		variance += (values[i] - average) * (values[i] - average);
+	}
+	variance /= numOuts;
+
+	cout << "Scaling factor: " << MAX << endl;
 	cout << "Perturbed tour cost: " << average << endl;
+	cout << "Variance: " << variance << endl;
+
+	return 0;
 }
