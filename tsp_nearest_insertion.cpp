@@ -99,14 +99,14 @@ public:
     }
     cout<<endl;
   }
-  void printDistance()
+  double getDistance()
   {
     double distance = 0;
     for(int i=0;i<n-1;i++)
       distance += dist(tourV[i],tourV[i+1]);
 
     distance += dist(tourV[0],tourV[n-1]);
-    cout<<"Distance: "<<distance<<endl;
+    return distance;
   }
 };
 
@@ -116,12 +116,12 @@ double dist_l2(double x1, double y1, double x2, double y2){
 
 int main()
 {
-    int n;
+    int n,a;
     cin>>n;
-
+    
     double x[n], y[n];
     for(int i=0;i<n;i++)
-      cin>>x[i]>>y[i];
+      cin>>a>>x[i]>>y[i];
 
     Graph g(n);
 
@@ -132,5 +132,7 @@ int main()
     }
 
     g.calcTour();
-    g.printPath(), g.printDistance();
+    cout<< g.getDistance();
+    
+    return 0;
 }

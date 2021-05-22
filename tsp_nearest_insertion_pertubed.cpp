@@ -1,4 +1,6 @@
 #include<bits/stdc++.h>
+#include<thread>
+
 using namespace std;
 
 #define INF 0x7fffffff;
@@ -7,8 +9,8 @@ class Graph{
 private:
   int n;
   vector<unordered_map<int,double> > adj; //Adjacency list
-  vector<set<pair<double,int> > > inAdj; //Edges between the vertices in tour and vertices not in tour 
-  vector<int> tourPos; 
+  vector<set<pair<double,int> > > inAdj; //Edges between the vertices in tour and vertices not in tour
+  vector<int> tourPos;
   vector<int> tourV; //Vertices in the tour
 
   int selectV(){ //Returns i such that dist(i,j) for all j in tour is minimum
@@ -110,28 +112,28 @@ public:
   }
 };
 
+double** x_inp;
+double** y_inp;
+double* values;
+
 double dist_l2(double x1, double y1, double x2, double y2){
     return sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
 }
 
-class Argument{
-public:
-	int n;
-	double* x;
-	double* y;
-};
-
-double tour_cost(int n, double x[], double y[])
+void tour_cost(int n, int ind)
 {
     Graph g(n);
-	
+
+    double* x = x_inp[ind];
+    double* y = y_inp[ind];
+
     for(int i=0;i<n;i++){
        for(int j=i+1;j<n;j++){
           g.addEdge(i,j, dist_l2(x[i],y[i],x[j],y[j]));
        }
     }
     g.calcTour();
-    return g.getDistance();
+    values[ind] = g.getDistance();
 }
 
 int main(int argc, char* argv[]) {
@@ -143,7 +145,7 @@ int main(int argc, char* argv[]) {
 
 	double x[n], y[n];
 	double MAX = -1.0;
-	
+
 	for(u_int i = 0; i < n; i++) {
 		u_int id;
 		cin >> id >> x[i] >> y[i];
@@ -155,41 +157,71 @@ int main(int argc, char* argv[]) {
 	double sigma = atof(argv[2]);
 	u_int numOuts = atoi(argv[3]);
 
-	double sum = 0.0;
-	
+  x_inp = (double**)malloc(numOuts * sizeof(double*));
+  y_inp = (double**)malloc(numOuts * sizeof(double*));
+  values = (double*)malloc(numOuts * sizeof(double));
+
+  vector<thread> threads(numOuts);
+
 	if(string(type) == "uniform") {
 		uniform_real_distribution<double> distribution(-sigma, sigma);
 
 		for(u_int i = 0; i < numOuts; i++) {
-			double out_x[n], out_y[n];
+			double* out_x;
+      double* out_y;
+
+			out_x = (double*)malloc(sizeof(double)*n);
+			out_y = (double*)malloc(sizeof(double)*n);
 
 			for(u_int i = 0; i < n; i++) {
 				out_x[i] = x[i] / MAX + distribution(generator);
 				out_y[i] = y[i] / MAX + distribution(generator);
 			}
-			
-			sum += tour_cost(n,out_x, out_y);
+
+      x_inp[i] = out_x;
+      y_inp[i] = out_y;
+
+      threads[i] = thread(tour_cost, n, i);
 		}
 	}
 	else {
 		normal_distribution<double> distribution(0.0, sigma);
 
 		for(u_int i = 0; i < numOuts; i++) {
-			double out_x[n], out_y[n];
+			double* out_x;
+      double* out_y;
+
+			out_x = (double*)malloc(sizeof(double)*n);
+			out_y = (double*)malloc(sizeof(double)*n);
 
 			for(u_int i = 0; i < n; i++) {
 				out_x[i] = x[i] / MAX + distribution(generator);
 				out_y[i] = y[i] / MAX + distribution(generator);
 			}
 
-			sum += tour_cost(n,out_x, out_y);
+      x_inp[i] = out_x;
+      y_inp[i] = out_y;
+
+		  threads[i] = thread(tour_cost, n, i);
 		}
 	}
 
-	double average = sum / numOuts;
-	average *= MAX;
-	
-	cout <<average;
-	
+	double variance = 0.0;
+	double average = 0.0;
+
+  for(u_int i=0; i<numOuts; i++){
+     threads[i].join();
+     values[i] = values[i] * MAX;
+     average += values[i];
+  }
+  average /= numOuts;
+
+	for(u_int i = 0; i < numOuts; i++) {
+		variance += (values[i] - average) * (values[i] - average);
+	}
+	variance /= numOuts;
+	//variance /= MAX;
+
+	cout << average << " " << variance;
 	return 0;
 }
