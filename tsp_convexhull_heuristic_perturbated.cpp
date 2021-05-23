@@ -1,9 +1,3 @@
-#include <iostream>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/convex_hull_2.h>
-
-
-#include<bits/stdc++.h>
 #define INF 0x7fffffff;
 #include <fstream>
 
@@ -12,7 +6,7 @@ typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef K::Point_2 Point_2;
 float dist(pair<double,double> a,pair<double,double> b)
 {
-	return sqrt((a.first-b.first)*(a.first-b.first)+(a.second-b.second)*(a.second-b.second));
+  return sqrt((a.first-b.first)*(a.first-b.first)+(a.second-b.second)*(a.second-b.second));
 }
 class tsp_convexhull_heuristic
 {
@@ -33,11 +27,11 @@ public:
       }
       Point_2 result[n];
     Point_2 *ptr = CGAL::convex_hull_2( input, input+n, result );
-    cout<<endl;
-    std::cout <<  ptr - result << " points on the convex hull and they are" << std::endl;
+    //cout<<endl;
+   // std::cout <<  ptr - result << " points on the convex hull and they are" << std::endl;
 
     for(int i = 0; i < ptr - result; i++){
-      cout<<result[i].x()<<","<<result[i].y()<<endl;
+      //cout<<result[i].x()<<","<<result[i].y()<<endl;
       auto p=make_pair(result[i].x(),result[i].y());
       temp_tour.push_back(p);
       all_points.erase(find(all_points.begin(), all_points.end(),p)) ;
@@ -64,12 +58,8 @@ public:
       temp_tour.insert(temp_tour.begin() + (index_i+1)%temp_tour.size(), all_points[index_j]);
       all_points.erase(all_points.begin()+index_j);
     }  
-    cout<<endl<<"the tour is:"<<endl;
-     for(int i=0;i<temp_tour.size();i++)
-     {
-      cout<<temp_tour[i].first<<" "<<temp_tour[i].second<<endl;
-
-     }
+    
+     
      double d=0;
      for(int i=0;i<temp_tour.size();i++)
      {
@@ -99,38 +89,37 @@ int main(int argc, char** argv)
   string type = string(argv[1]);
   double sigma = atof(argv[2]);
   u_int numOuts = atoi(argv[3]);
+  //cout<< type<<sigma<<numOuts<<endl;
 
   double sum = 0.0;
-    double values[numOuts];
+  double values[numOuts];
   if(string(type) == "uniform") {
     uniform_real_distribution<double> distribution(-sigma, sigma);
 
     for(u_int j = 0; j < numOuts; j++) {
       double out_x[n], out_y[n];
-
       for(u_int i = 0; i < n; i++) {
-        out_x[i] = x[i] / MAX + distribution(generator);
-        out_y[i] = y[i] / MAX + distribution(generator);
+        out_x[i] = x[i] + distribution(generator)*MAX;
+        out_y[i] = y[i]  + distribution(generator)*MAX;
       }
-      tsp_convexhull_heuristic tsp(n, out_x, out_y);
-      double cost = tsp.tour_cost* MAX;
+
+      tsp_convexhull_heuristic tsp(n,out_x, out_y);
+      double cost = tsp.tour_cost ;
       sum += cost;
       values[j] = cost;
     }
   }
   else {
+    //cout<<"came";
     normal_distribution<double> distribution(0.0, sigma);
-
     for(u_int j = 0; j < numOuts; j++) {
       double out_x[n], out_y[n];
-
       for(u_int i = 0; i < n; i++) {
-        out_x[i] = x[i] / MAX + distribution(generator);
-        out_y[i] = y[i] / MAX + distribution(generator);
-      }
-
-      tsp_convexhull_heuristic tsp(n, out_x, out_y);
-      double cost = tsp.tour_cost* MAX;
+        out_x[i] = x[i]  + distribution(generator)*MAX;
+        out_y[i] = y[i]  + distribution(generator)*MAX;
+      } 
+      tsp_convexhull_heuristic tsp(n,out_x, out_y);
+      double cost = tsp.tour_cost;
       sum += cost;
       values[j] = cost;
     }
@@ -138,14 +127,15 @@ int main(int argc, char** argv)
 
   double variance = 0.0;
   double average = sum / numOuts;
+
   for(u_int i = 0; i < numOuts; i++) {
     variance += (values[i] - average) * (values[i] - average);
   }
   variance /= numOuts;
 
-  cout << "Scaling factor: " << MAX << endl;
-  cout << "Perturbed tour cost: " << average << endl;
-  cout << "Variance: " << variance << endl;
+  //cout << "Scaling factor: " << MAX << endl;
+  cout<< average<<" ";
+  cout<< variance;
 
   return 0;
 }
